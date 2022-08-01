@@ -1,0 +1,149 @@
+---
+- name: Mysql | test
+  ansible.builtin.debug:
+    msg: System 
+
+- name: Mysql | install packages
+  become: true
+  become_method: sudo
+  yum:
+    name:
+      - vim
+      - vim-enhanced
+      - mc
+      - wget
+      - mariadb-server
+      
+- name: Mysql | copy /etc/systemd/system/node_exporter.service
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Mysql | Install, Enable and restart node_exporter
+  become: true
+  become_method: sudo
+  ansible.builtin.shell: |
+      wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz
+      tar zxvf node_exporter-*.linux-amd64.tar.gz
+      cd node_exporter-*.linux-amd64
+      cp node_exporter /usr/local/bin/
+      useradd --no-create-home --shell /bin/false nodeusr
+      chown -R nodeusr:nodeusr /usr/local/bin/node_exporter
+      systemctl daemon-reload
+      systemctl enable node_exporter
+      systemctl start node_exporter
+
+
+- name: Mysql | Enable service Mysql, and not touch the state
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: mariadb
+    enabled: yes
+    
+- name: Mysql | Start1 service Mysql
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: mariadb
+    state: restarted
+
+- name: Mysql | Create password for user root
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysqladmin -u root password root
+  ignore_errors: True
+  
+- name: Mysql | Create DB wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "CREATE DATABASE wordpress;"
+
+- name: Mysql | Create user wordpress and password wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'wordpress';"
+  ignore_errors: True
+
+- name: Mysql | Create GRANT for user wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "GRANT ALL PRIVILEGES ON wordpress . * TO 'wordpress'@'localhost';"
+  ignore_errors: True
+
+- name: Mysql | Create user wordpress on ALL Hosts and password wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "CREATE USER 'wordpress'@'%' IDENTIFIED BY 'wordpress';"
+  ignore_errors: True
+
+- name: Mysql | Create GRANT for user wordpress in ALL Hosts
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "GRANT ALL PRIVILEGES ON wordpress . * TO 'wordpress'@'%';"
+  ignore_errors: True
+
+- name: Mysql | FLUSH PRIVILEGES;
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "FLUSH PRIVILEGES;"
+  ignore_errors: True
+
+- name: Mysql | add conf to db01
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/server_db01.cnf
+    dest: /etc/my.cnf.d/server.cnf
+  when: "'db01' in inventory_hostname"
+  ignore_errors: True
+
+- name: Mysql | add conf to db02
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/server_db02.cnf
+    dest: /etc/my.cnf.d/server.cnf
+  when: "'db02' in inventory_hostname"
+  ignore_errors: True
+
+- name: Mysql | Restart1 MariaDB service
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: mariadb
+    state: restarted
+  ignore_errors: True
+
+- name: Mysql | Create Grant for user replmy for replication
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "GRANT REPLICATION SLAVE ON *.* TO 'replmy'@'192.168.101.12' IDENTIFIED BY 'replmy';"
+  when: "'db01' in inventory_hostname"  
+  ignore_errors: True
+
+- name: Mysql | Enable replication on DB02
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "CHANGE MASTER TO MASTER_HOST='192.168.101.11', master_user='replmy', master_password='replmy', master_log_file = 'mysql-bin.000001', MASTER_LOG_POS = 0;"
+  when: "'db02' in inventory_hostname"  
+  ignore_errors: True
+
+- name: Mysql | Start Slave on DB02
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mysql -u root -proot -e "start slave;"
+  when: "'db02' in inventory_hostname"  
+  ignore_errors: True

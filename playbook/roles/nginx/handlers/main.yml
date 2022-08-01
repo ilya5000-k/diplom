@@ -1,0 +1,8 @@
+---
+- name: nginx systemd
+  become: true
+  become_method: sudo
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: yes
+    state: started

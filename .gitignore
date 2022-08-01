@@ -1,0 +1,11 @@
+key.json
+#infrastructure/key.json
+infrastructure/*.tfstste
+infrastructure/*.backup
+infrastructure/terraform.tfstate
+vscode/
+infrastructure/terraform/
+#infrastructure/variables.tf
+#infrastructure/meta.txt
+**/.terraform
+.terraform.lock.hcl

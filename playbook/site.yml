@@ -1,0 +1,21 @@
+---
+- hosts: nginx
+  vars:
+    nginx_user: nginx
+  roles:
+   - nginx
+- hosts: mysql
+  roles:
+   - mysql
+- hosts: wordpress_g
+  roles:
+   - wordpress
+
+- hosts: gitlab_g
+  roles:
+   - gitlab
+
+- hosts: monitoring_g
+  roles:
+   - monitoring
+

@@ -1,0 +1,5 @@
+[mysqld]
+server-id = 2
+binlog_do_db = wordpress
+#replicate-ignore-table=db1.table1
+#replicate-ignore-table=db1.table2

@@ -1,0 +1,142 @@
+---
+- name: Nginx | Create Iptables NAT chain
+  become: true
+  become_method: sudo
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: 'eth0'
+    jump: MASQUERADE
+
+- name: Nginx | Enable IPv4 forwarding
+  become: true
+  become_method: sudo
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    reload: True
+
+- name: Nginx | Epel-release on Nginx-01
+  become: true
+  become_method: sudo
+  ansible.builtin.yum:
+    name:
+      - epel-release
+
+
+- name: Nginx | Install Web Server on Nginx-01
+  become: true
+  become_method: sudo
+  ansible.builtin.yum:
+    name:
+      - nginx
+      - nginx-mod-stream
+      - snapd
+      - certbot
+      - mc
+      - wget
+    
+  notify:
+    - nginx systemd
+  
+- name: Nginx | Replace nginx.conf
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/nginx.conf
+    dest: /etc/nginx/nginx.conf
+
+- name: Nginx | copy /etc/systemd/system/node_exporter.service
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Nginx | Install, Enable and restart node_exporter
+  become: true
+  become_method: sudo
+  ansible.builtin.shell: |
+      wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz
+      tar zxvf node_exporter-*.linux-amd64.tar.gz
+      cd node_exporter-*.linux-amd64
+      cp node_exporter /usr/local/bin/
+      useradd --no-create-home --shell /bin/false nodeusr
+      chown -R nodeusr:nodeusr /usr/local/bin/node_exporter
+      systemctl daemon-reload
+      systemctl enable node_exporter
+      systemctl start node_exporter
+
+- name: Nginx | mkdir for index.html
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /var/www/kor-iv.ru/public_html
+    state: directory
+
+- name: Nginx | Replace index.html
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/index.html
+    dest: /var/www/kor-iv.ru/public_html/index.html
+
+- name: Nginx | Start Nginx service
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Nginx | copy cert.sh
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/cert.sh
+    dest: /opt/cert.sh
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+
+- name: Nginx | Start LE prepare
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: /opt/cert.sh
+
+- name: Nginx | Start Nginx service
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: Nginx | get stage cert 
+  become: true
+  shell: >
+    certbot certonly --test-cert -d {{ domain }}
+    -d www.{{ domain }} --email help@{{ domain }}
+    --agree-tos --nginx -w /var/www/{{ domain }}/public_html
+    --non-interactive
+  ignore_errors: true
+
+- name: Nginx | Replace nginx.conf for SSL
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/nginx_ssl.conf
+    dest: /etc/nginx/nginx.conf
+
+- name: Nginx | setsebool -P httpd_can_network_connect on
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: setsebool -P httpd_can_network_connect on
+  
+- name: Nginx | Start Nginx service
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded

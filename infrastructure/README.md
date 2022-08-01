@@ -5,6 +5,7 @@
 * key.json
 * main.tf в ресурсе backend "s3" значение bucket = "ХХХХ"
 * variables.tf все переменные с "ХХХХ"
+* Выполнить импорт переменных export AWS_ACCESS_KEY_ID="ХХХХ" && export AWS_SECRET_ACCESS_KEY="ХХХХ"
 
 ## Назначение файлов:
 ### gitlab.tf.

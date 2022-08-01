@@ -1,0 +1,5 @@
+worker_processes: auto
+worker_connections: 1000
+client_max_body_size: 512M
+worker_limit: 1024
+domain: kor-iv.ru

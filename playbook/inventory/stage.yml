@@ -1,0 +1,42 @@
+---
+nginx:
+  hosts:
+    nginx-01:
+      ansible_host: "{{ ext_ip }}"
+      ansible_user: ilya
+
+mysql:
+  hosts:
+    db01:
+      ansible_host: 192.168.101.11
+      ansible_user: ilya
+      ansible_ssh_common_args: "-J {{ ext_ip }} "
+    db02:
+      ansible_host: 192.168.101.12
+      ansible_user: ilya
+      ansible_ssh_common_args: "-J 51.250.69.201"
+
+wordpress_g:
+  hosts:
+    wordpress:
+      ansible_host: 192.168.101.13
+      ansible_user: ilya
+      ansible_ssh_common_args: "-J 51.250.69.201"
+
+gitlab_g:
+  hosts:
+    gitlab:
+      ansible_host: 192.168.101.14
+      ansible_user: ilya
+      ansible_ssh_common_args: "-J 51.250.69.201"
+    runner:
+      ansible_host: 192.168.101.15
+      ansible_user: ilya
+      ansible_ssh_common_args: "-J 51.250.69.201"
+  
+monitoring_g:
+  hosts:
+    monitoring:
+      ansible_host: 192.168.101.16
+      ansible_user: ilya
+      ansible_ssh_common_args: "-J 51.250.69.201"

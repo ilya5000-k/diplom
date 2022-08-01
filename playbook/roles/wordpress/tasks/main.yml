@@ -1,0 +1,218 @@
+---
+- name: Wordpress | test
+  ansible.builtin.debug:
+    msg: System 
+
+- name: Wordpress | Install packages on Wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.yum:
+    name:
+      - mc
+      - httpd
+      - wget
+      - automake
+      - rsync
+  ignore_errors: true
+
+- name: Wordpress | add /etc/rsyncd.scrt in /etc/rsyncd.scrt
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/rsyncd.scrt
+    dest: /etc/rsyncd.scrt
+
+- name: Wordpress |  chmod 640 /etc/rsyncd.scrt
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: chmod 640 /etc/rsyncd.scrt
+  ignore_errors: true
+
+- name: Wordpress | add /etc/rsyncd.conf in /etc/rsyncd.conf
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/rsyncd.conf
+    dest: /etc/rsyncd.conf
+
+- name: Wordpress | Enable service Rsync, and not touch the state
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: rsyncd
+    enabled: yes
+  ignore_errors: true
+
+- name: Wordpress | Start service Rsync
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: rsyncd
+    state: restarted
+  ignore_errors: true
+
+- name: Wordpress | copy /etc/systemd/system/node_exporter.service
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Wordpress | Install, Enable and restart node_exporter
+  become: true
+  become_method: sudo
+  ansible.builtin.shell: |
+      wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz
+      tar zxvf node_exporter-*.linux-amd64.tar.gz
+      cd node_exporter-*.linux-amd64
+      cp node_exporter /usr/local/bin/
+      useradd --no-create-home --shell /bin/false nodeusr
+      chown -R nodeusr:nodeusr /usr/local/bin/node_exporter
+      systemctl daemon-reload
+      systemctl enable node_exporter
+      systemctl start node_exporter
+
+- name: Wordpress | Install epel-release on Wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.yum:
+    name:
+      - epel-release
+
+- name: Wordpress | rm -f /etc/httpd/conf.d/
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: rm -f /etc/httpd/conf.d/*.*
+  ignore_errors: true
+
+- name: Wordpress | add wordpress.conf in /etc/httpd/conf.d/
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/wordpress.conf
+    dest: /etc/httpd/conf.d/wordpress.conf
+
+- name: Wordpress | wget Wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: wget http://WordPress.org/latest.tar.gz
+
+- name: Wordpress | unpack Wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: tar -xzvf latest.tar.gz
+
+- name: Wordpress | mkdir for wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /var/www/wordpress
+    state: directory
+
+- name: Wordpress | mv wordpress/* /var/www/wordpress/
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: mv wordpress/* /var/www/wordpress/
+
+
+- name: Wordpress | sudo chown -R apache.apache /var/www/wordpress/
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: chown -R apache.apache /var/www/wordpress/
+
+
+- name: Wordpress | add repos
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: rpm -Uvh http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+  ignore_errors: true
+      
+- name: Wordpress | add repos1
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+  ignore_errors: true
+
+- name: Wordpress | add /etc/yum.repos.d/remi-php74.repo in /etc/yum.repos.d
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/remi-php74.repo
+    dest: /etc/yum.repos.d/remi-php74.repo
+
+- name: Wordpress | add wp-config.php in /var/www/wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/wp-config.php
+    dest: /var/www/wordpress/wp-config.php
+
+- name: Wordpress | yum update
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: yum -y update
+  async: 600
+  poll: 30
+
+- name: Wordpress | install php
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: yum -y install php74 php74-php-mcrypt php74-php-cli php74-php-fpm php74-php-gd php74-php-mysql php74-php-curl php74-php-ldap php74-php-zip php74-php-fileinfo php php-mysql
+  ignore_errors: true
+
+- name: Wordpress | Enable php74-php-fpm
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: systemctl enable php74-php-fpm
+
+- name: Wordpress | Enable httpd
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: systemctl enable httpd
+
+- name: Wordpress | add config in /etc/selinux/config
+  become: true
+  become_method: sudo
+  ansible.builtin.template:
+    src: ./templates/config
+    dest: /etc/selinux/config
+
+- name: Wordpress | Start HTTPD service
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: httpd
+    state: reloaded
+
+- name: Wordpress | Start php74-php-fpm service
+  become: true
+  become_method: sudo
+  ansible.builtin.service:
+    name: php74-php-fpm
+    state: reloaded
+
+- name: Wordpress | Create user for wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: useradd -p wordpress -s /bin/bash wordpress
+  ignore_errors: true
+
+- name: Wordpress | reboot wordpress
+  become: true
+  become_method: sudo
+  ansible.builtin.shell:
+    cmd: shutdown -r 1
+  ignore_errors: true

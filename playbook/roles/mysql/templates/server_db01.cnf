@@ -1,0 +1,10 @@
+[mysqld]
+server-id = 1
+log_bin = mysql-bin
+log_error = mysql-bin.err
+binlog_ignore_db = information_schema,mysql,test
+binlog_do_db = wordpress
+#replicate-do-db = base1
+#replicate-do-db = base2
+#replicate-do-table=base1.table1
+#replicate-do-table=base1.table2
