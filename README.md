@@ -20,7 +20,7 @@
 Имеется доступ к личному кабинету на сайте регистратора.
 
 <p align="center">
-  <img width="1200" height="600" src="./diplom_reg_dns.png">
+  <img width="1200" height="600" src="./png/diplom_reg_dns.png">
 </p>
 
 #### 2. Создание инфраструктуры
@@ -31,7 +31,7 @@
 Подготовлен backend для Terraform S3 bucket в созданном YC аккаунте:
 
 <p align="center">
-  <img width="1200" height="600" src="./diplom_yc_backet.png">
+  <img width="1200" height="600" src="./png/diplom_yc_backet.png">
 </p>
 
 Настроены workspaces. Использован один workspace с наименованием stage.
@@ -41,7 +41,7 @@
 Terraform сконфигурирован и создание инфраструктуры посредством Terraform возможно без дополнительных ручных действий.
 
 <p align="center">
-  <img width="1200" height="600" src="./diplom_yc.png">
+  <img width="1200" height="600" src="./png/diplom_yc.png">
 </p>
 
 #### 3. Установка Nginx и LetsEncrypt
@@ -90,7 +90,7 @@ Terraform сконфигурирован и создание инфрастру�
 * На сервере kor-iv.ru отредактирован upstream для выше указанного URL и он смотрит на виртуальную машину на которой установлен WordPress.
 * В браузере можно открыть URL [https://www.kor-iv.ru](адрес "Описание") и увидеть главную страницу WordPress.
 <p align="center">
-  <img width="1200" height="600" src="./diplom_wordpress.png">
+  <img width="1200" height="600" src="./png/diplom_wordpress.png">
 </p>
 
 #### 6. Установка Gitlab CE и Gitlab Runner
@@ -105,10 +105,10 @@ Terraform сконфигурирован и создание инфрастру�
 * При любом коммите в репозиторий с WordPress и создании тега (например, v1.0.0) происходит деплой на виртуальную машину.
 
 <p align="center">
-  <img width="1200" height="600" src="./diplom_gitlab1.png">
+  <img width="1200" height="600" src="./png/diplom_gitlab1.png">
 </p>
 <p align="center">
-  <img width="1200" height="600" src="./diplom_gitlab2.png">
+  <img width="1200" height="600" src="./png/diplom_gitlab2.png">
 </p>
 
 #### 7. Установка Prometheus, Alert Manager, Node Exporter и Grafana
@@ -127,22 +127,22 @@ Terraform сконфигурирован и создание инфрастру�
 * Метрики всех Node Exporter доступны Prometheus.
 
 <p align="center">
-  <img width="1200" height="600" src="./diplom_prometheus.png">
+  <img width="1200" height="600" src="./png/diplom_prometheus.png">
 </p>
 
 * У Alert Manager есть необходимый набор правил для создания алертов.
 
 <p align="center">
-  <img width="1200" height="600" src="./diplom_alertmanager.png">
+  <img width="1200" height="600" src="./png/diplom_alertmanager.png">
 </p>
 
 * У alertmanager имеется правило оповещения в указанную электронную почту при недоступности Node Exporter по всем серверам.
 <p align="center">
-  <img width="1200" height="600" src="./diplom_alert.png">
+  <img width="1200" height="600" src="./png/diplom_alert.png">
 </p>
 
 
 * В Grafana есть дашборд отображающий метрики из Node Exporter по всем серверам.
 <p align="center">
-  <img width="1200" height="600" src="./diplom_grafana.png">
+  <img width="1200" height="600" src="./png/diplom_grafana.png">
 </p>
