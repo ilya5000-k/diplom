@@ -14,29 +14,29 @@ mysql:
     db02:
       ansible_host: 192.168.101.12
       ansible_user: ilya
-      ansible_ssh_common_args: "-J 51.250.69.201"
+      ansible_ssh_common_args: "-J {{ ext_ip }} "
 
 wordpress_g:
   hosts:
     wordpress:
       ansible_host: 192.168.101.13
       ansible_user: ilya
-      ansible_ssh_common_args: "-J 51.250.69.201"
+      ansible_ssh_common_args: "-J {{ ext_ip }} "
 
 gitlab_g:
   hosts:
     gitlab:
       ansible_host: 192.168.101.14
       ansible_user: ilya
-      ansible_ssh_common_args: "-J 51.250.69.201"
+      ansible_ssh_common_args: "-J {{ ext_ip }} "
     runner:
       ansible_host: 192.168.101.15
       ansible_user: ilya
-      ansible_ssh_common_args: "-J 51.250.69.201"
+      ansible_ssh_common_args: "-J {{ ext_ip }} "
   
 monitoring_g:
   hosts:
     monitoring:
       ansible_host: 192.168.101.16
       ansible_user: ilya
-      ansible_ssh_common_args: "-J 51.250.69.201"
+      ansible_ssh_common_args: "-J {{ ext_ip }} "
